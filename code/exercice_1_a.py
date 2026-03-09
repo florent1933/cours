@@ -1,1 +1,2 @@
-print("   Nom Client    ".strip().lower().replace(" ", "_"))
+header_name = "   Nom Client    "
+print(header_name.strip().lower().replace(" ", "_"))
