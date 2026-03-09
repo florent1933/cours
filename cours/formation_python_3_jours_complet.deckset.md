@@ -427,8 +427,6 @@ print(header_clean)
 
 # Exercice J1-B - Nettoyer une cellule email
 
-Spécification :
-
 - entrée : `email_raw` saisi au clavier
 - appliquer :
   - trim
