@@ -1,0 +1,7 @@
+id,nom_client,email,montant,date
+1,Alice Durand,alice@acme.com,1200.50,2026-03-01
+2,Bob Martin,contact_acme.com,980.00,2026-03-02
+3,Chloe Bernard,chloe.bernard@example.fr,,2026-03-03
+4,David Simon,david.simon@example.fr,N/A,
+5,Emma Lopez,,450.00,2026-03-05
+6,Farid Khan,farid.khan@example.fr,700.00,2026-03-06

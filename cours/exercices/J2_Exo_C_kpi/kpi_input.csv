@@ -1,0 +1,7 @@
+row_id,email_valide,montant_net
+1,true,1200.50
+2,false,980.00
+3,true,700.00
+4,true,
+5,true,450.00
+6,false,0

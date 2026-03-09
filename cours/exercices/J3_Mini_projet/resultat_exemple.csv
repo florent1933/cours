@@ -1,0 +1,6 @@
+commande_id,client,email_clean,email_valide,montant_net,date_commande,source,anomalie
+1001,Acme,orders@acme.com,true,1200.50,2026-03-01,excel,
+1002,Beta Corp,contact@beta.fr,true,980.00,2026-03-02,excel,
+1003,Gamma SA,gamma_sa.fr,false,450.00,2026-03-03,api,email_invalide
+1004,Delta,delta@delta.com,true,,2026-03-04,api,montant_vide
+1005,Epsilon,epsilon@epsilon.com,true,1100.25,2026-03-05,excel,

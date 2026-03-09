@@ -1,0 +1,7 @@
+id,nom,email,date_maj,montant
+1,Alice,alice@acme.com,2026-03-01,100
+2,Alice B, Alice@ACME.COM ,2026-03-05,150
+3,Bob,bob@example.fr,2026-02-27,200
+4,Bob 2,bob@example.fr,2026-03-02,220
+5,Claire,claire@example.fr,2026-03-03,130
+6,NoEmail,,2026-03-04,50

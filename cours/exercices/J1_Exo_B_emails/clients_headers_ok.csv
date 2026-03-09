@@ -1,0 +1,6 @@
+nom_client,email,montant,date
+Alice Durand,  Alice@ACME.COM ,"1 200,50 €",2026-03-01
+Bob Martin,contact_acme.com,980.00,2026-03-02
+Chloe Bernard,chloe.bernard@example.fr,,2026-03-03
+David Simon,DAVID.SIMON@EXAMPLE.FR,N/A,
+Emma Lopez, ,"450,00",2026-03-05

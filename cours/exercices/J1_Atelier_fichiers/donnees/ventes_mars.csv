@@ -1,0 +1,4 @@
+id_commande,client,montant,date_commande
+1001,Acme,1200.50,2026-03-01
+1002,Beta Corp,980.00,2026-03-02
+1003,Gamma SA,450.00,2026-03-03

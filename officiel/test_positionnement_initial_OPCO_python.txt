@@ -1,0 +1,169 @@
+TEST DE POSITIONNEMENT INITIAL - FORMATION PYTHON (OPCO)
+Version 15 minutes - 100% QCM
+
+1) INFORMATIONS
+- Entreprise : ___________________________
+- Participant : __________________________
+- Service : ______________________________
+- Date : ____ / ____ / ______
+- Formateur : ____________________________
+
+2) CADRE DU TEST
+- Duree : 15 minutes
+- Format : QCM uniquement (sans aide externe)
+- Nombre de questions : 15
+- Bareme : 1 point par question, total /15
+- Objectif : mesurer le niveau initial avant formation Python debutant
+
+3) CONSIGNES
+- Cocher une seule reponse par question.
+- Ne pas laisser de reponse multiple.
+- Si vous ne savez pas, laisser vide.
+
+============================================================
+QCM (15 QUESTIONS)
+============================================================
+
+Q1
+Python est principalement :
+a) Un tableur
+b) Un langage de programmation
+c) Un navigateur web
+Reponse : ______
+
+Q2
+Un fichier CSV est :
+a) Un fichier image
+b) Un fichier texte de donnees separees
+c) Un fichier video
+Reponse : ______
+
+Q3
+Une API sert a :
+a) Echanger des donnees entre applications
+b) Changer le fond d'ecran
+c) Compresser un dossier
+Reponse : ______
+
+Q4
+Automatiser une tache signifie :
+a) La refaire manuellement plus vite
+b) La faire executer par un script
+c) L'envoyer a un collegue
+Reponse : ______
+
+Q5
+Dans un script, une variable sert a :
+a) Stocker une valeur
+b) Imprimer un PDF
+c) Ouvrir Excel
+Reponse : ______
+
+Q6
+Une condition if permet :
+a) De choisir une action selon un critere
+b) De creer un dossier automatiquement
+c) D'accelerer internet
+Reponse : ______
+
+Q7
+Une boucle for sert a :
+a) Ouvrir un navigateur
+b) Repetir une action plusieurs fois
+c) Fermer Windows
+Reponse : ______
+
+Q8
+Le format le plus adapte pour un export tabulaire simple est :
+a) CSV
+b) MP3
+c) JPG
+Reponse : ______
+
+Q9
+Quel outil est adapte pour coder en environnement Windows dans ce contexte ?
+a) VS Code
+b) Paint
+c) PowerPoint
+Reponse : ______
+
+Q10
+Avant de traiter un fichier, la priorite est de verifier :
+a) Le style du document
+b) La structure des colonnes et la qualite des donnees
+c) La couleur des cellules
+Reponse : ______
+
+Q11
+requests en Python sert souvent a :
+a) Appeler une API
+b) Creer des graphiques
+c) Convertir un CSV en PDF automatiquement
+Reponse : ______
+
+Q12
+pandas est surtout utilise pour :
+a) Traitement de donnees tabulaires
+b) Montage video
+c) Gestion d'imprimantes
+Reponse : ______
+
+Q13
+Un bon nom de fichier de sortie est :
+a) final_v2_bis_ok.csv
+b) rapport_ventes_2026_02.csv
+c) nouveau.csv
+Reponse : ______
+
+Q14
+Le role principal de try/except est :
+a) Gerer les erreurs sans arreter brutalement le script
+b) Faire des graphiques
+c) Installer Python
+Reponse : ______
+
+Q15
+Le principal gain d'un script metier est :
+a) Augmenter la saisie manuelle
+b) Reduire le temps et les erreurs repetitives
+c) Remplacer totalement les outils existants
+Reponse : ______
+
+============================================================
+4) BAREME ET INTERPRETATION
+============================================================
+- 1 point par bonne reponse
+- Total : /15
+
+Niveaux interpretes :
+- 0 a 5 : Debutant complet
+- 6 a 10 : Debutant
+- 11 a 13 : Debutant avance
+- 14 a 15 : Bases solides
+
+============================================================
+5) CORRIGE (FORMATEUR)
+============================================================
+Q1:b Q2:b Q3:a Q4:b Q5:a Q6:a Q7:b Q8:a Q9:a Q10:b Q11:a Q12:a Q13:b Q14:a Q15:b
+
+============================================================
+6) GRILLE DE RESULTAT (FORMATEUR)
+============================================================
+- Score : ____ /15
+- Niveau retenu : __________________
+
+Observations pedagogiques (2 lignes max) :
+
+
+Decisions d'adaptation :
+- Priorite 1 : __________________________________________
+- Priorite 2 : __________________________________________
+
+============================================================
+7) JUSTIFICATIF OPCO
+============================================================
+Ce document atteste qu'un test de positionnement initial a ete realise avant le demarrage de la formation.
+Le resultat a servi a adapter le contenu pedagogique et le rythme.
+
+Signature formateur : __________________   Date : ____ / ____ / ______
+Signature participant : ________________   Date : ____ / ____ / ______

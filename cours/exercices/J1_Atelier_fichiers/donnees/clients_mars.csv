@@ -1,0 +1,4 @@
+id,nom_client,email,montant,date
+1,Alice Durand,alice@acme.com,1200.50,2026-03-01
+2,Bob Martin,bob@example.fr,980.00,2026-03-02
+3,Chloe Bernard,chloe.bernard@example.fr,700.00,2026-03-03
