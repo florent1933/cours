@@ -1,0 +1,159 @@
+# ================================
+# Enterprise / Confidential
+# ================================
+secret/
+**/secret/
+business_logic/**/secret/
+
+# Generated artifacts
+output/
+**/output/
+rendus/**/output/
+
+# Secrets / credentials
+.env
+*.env
+*.key
+*.pem
+*.p12
+
+# Large generated or binary artifacts
+*.pdf
+
+# ================================
+# Python
+# ================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Type checkers / linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.ruff_cache/
+.pytype/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Local Python version
+.python-version
+
+# Notebook
+.ipynb_checkpoints/
+
+# Static analysis
+.pybuilder/
+target/
+
+# Frameworks
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy
+
+# Documentation
+docs/_build/
+
+# Jupyter
+profile_default/
+ipython_config.py
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Poetry
+poetry.lock
+
+# PDM
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# pixi
+.pixi/
+
+# uv
+.uv/
+
+# ================================
+# IDE / Editor / OS
+# ================================
+.vscode/
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini

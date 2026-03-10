@@ -1,0 +1,29 @@
+# Enterprise confidential zones
+
+secret/
+**/secret/
+business_logic/**/secret/
+
+## useless for code
+
+cours/
+officiel/
+preparation/
+
+# Generated artifacts (not needed in AI context)
+
+output/
+**/output/
+rendus/**/output/
+
+# Local secrets / credentials
+
+.env
+_.env
+_.key
+_.pem
+_.p12
+
+# Large generated or binary artifacts (optional context reduction)
+
+\*.pdf

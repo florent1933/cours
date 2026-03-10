@@ -1068,17 +1068,217 @@ Validation :
 
 # Jour 3
 
-## API + robustesse + mini-projet final
+## CSV -> Gemini Assist -> API + robustesse + mini-projet final
 
 ---
 
 # Jour 3 - Matin
 
+- lire un CSV métier
+- transformer en ajoutant des colonnes
+- écrire un nouveau CSV transformé
+- configuration Gemini Assist dans VS Code
+- workflow entreprise (code métier + contraintes)
 - API : principe
 - GET + token
 - JSON -> CSV
 - pandas + Excel
 - validations minimales
+
+---
+
+# J3 - Bloc CSV de démarrage
+
+Objectif :
+
+- partir d'un CSV brut
+- ajouter des colonnes dérivées
+- produire un CSV de sortie exploitable
+
+---
+
+# Lire un CSV (`DictReader`)
+
+```python
+import csv
+
+with open("input/commandes_input_exemple.csv", newline="", encoding="utf-8") as f:
+    rows = list(csv.DictReader(f))
+
+print("nb_lignes =", len(rows))
+print("colonnes =", list(rows[0].keys()))
+```
+
+---
+
+# Transformer : ajouter des colonnes
+
+```python
+for row in rows:
+    email_clean = row["email"].strip().lower()
+    row["email_clean"] = email_clean
+    row["email_valide"] = "@" in email_clean and "." in email_clean
+
+    amount_text = row["montant"].strip().replace("€", "").replace(" ", "").replace(",", ".")
+    row["montant_net"] = amount_text
+```
+
+---
+
+# Réécrire dans un nouveau CSV
+
+```python
+fieldnames = list(rows[0].keys())
+
+with open("output/commandes_transformees.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
+
+print("OK -> output/commandes_transformees.csv")
+```
+
+---
+
+# Exercice J3-00 - CSV transformation de base
+
+Spécification :
+
+- lire `input/commandes_input_exemple.csv`
+- ajouter `email_clean`, `email_valide`, `montant_net`
+- écrire `output/commandes_transformees.csv`
+
+Contrainte :
+
+- ne pas modifier/supprimer les colonnes d'origine
+
+---
+
+# Correction J3-00
+
+Validation minimale :
+
+- fichier de sortie créé
+- mêmes lignes que l'entrée
+- colonnes d'origine conservées
+- nouvelles colonnes bien remplies
+
+---
+
+# J3 - Bloc Gemini Assist entreprise
+
+Objectif :
+
+- cadrer l'usage de Gemini sur code métier
+- éviter toute exposition des documents confidentiels
+- rendre le workflow reproductible en équipe
+
+---
+
+# Workspace cible (`business_logic/script1`)
+
+```text
+business_logic/
+  libs/
+    cleaners.py
+    csv_io.py
+  script1/
+    main.py
+    input/
+      commandes_input_exemple.csv
+    output/
+    secret/
+      MODELE_fichiers_secret.md
+    .aiexclude
+    .gitignore
+```
+
+---
+
+# Règle sécurité (non négociable)
+
+- `secret/` ne doit pas entrer dans le contexte Gemini
+- prompts basés sur `main.py` + `libs/` + `input/` uniquement
+- les données d'entrée sont fausses mais structurellement réalistes
+- les vrais documents restent dans `secret/` (usage runtime local)
+
+---
+
+# Architecture code (non négociable)
+
+- `business_logic/libs/` = fonctions génériques et réutilisables
+- une responsabilité par fichier
+- aucune logique métier spécifique dans `libs/`
+- la logique métier locale peut rester dans `main.py`
+- toute utilité générique va dans `libs/`
+
+---
+
+# Fichier `.aiexclude` attendu
+
+```text
+secret/
+output/
+.env
+*.key
+*.pem
+```
+
+---
+
+# Checklist config Gemini dans VS Code
+
+1. ouvrir `business_logic/script1` comme racine de workspace
+2. activer Gemini Assist avec le compte entreprise
+3. vérifier que `.aiexclude` est présent en racine
+4. garder l'exclusion `.gitignore` active
+5. vérifier dans le Context Drawer que `secret/` n'est pas sélectionné
+
+---
+
+# Workflow métier avec contrainte entreprise
+
+1. mettre à jour `input/commandes_input_exemple.csv` (fausses données)
+2. demander à Gemini une modif sur `libs/*.py` (générique) ou `main.py` (métier local)
+3. exécuter localement et valider `output/resultat_exemple.csv`
+4. seulement ensuite, exécuter en environnement entreprise avec `secret/`
+
+---
+
+# Template de prompt équipe
+
+Support à fournir aux étudiants :
+
+- `business_logic/script1/PROMPT_TEMPLATE.md`
+- même structure de prompt pour toute l'équipe
+- contrôle systématique : `pas de secret/ dans la demande`
+
+---
+
+# Exercice J3-0 - Setup Gemini entreprise
+
+Spécification :
+
+- configurer Gemini dans VS Code sur `business_logic/script1`
+- valider que `secret/` est exclu
+- valider que `libs/` reste générique
+- lancer `main.py` sur input d'exemple
+
+Livrables :
+
+- capture de la config effective
+- `output/resultat_exemple.csv`
+- court compte-rendu : `ce qui est autorise / interdit`
+
+---
+
+# Correction J3-0
+
+Checklist de validation :
+
+- `.aiexclude` contient bien `secret/`
+- aucun fichier de `secret/` dans le contexte Gemini
+- script exécuté avec succès sur `input/commandes_input_exemple.csv`
 
 ---
 
