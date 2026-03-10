@@ -708,7 +708,7 @@ for row in rows:
 
 # Exercices guidés Jour 2
 
-Objectif : nettoyage Excel/CSV + logique métier.
+Objectif : nettoyage CSV + logique métier.
 
 Règle pédagogique :
 
@@ -730,7 +730,7 @@ Spécification :
 - convertir en `float` des valeurs hétérogènes :
   - `1 200,50 €`
   - `1200.50`
-  - `1,200.50`
+  - `1,200.50` (format us)
 - sortir `montant_net`
 
 Exemples :
@@ -805,7 +805,7 @@ print(result)
 
 Spécification :
 
-- à partir d'un Excel nettoyé, calculer :
+- à partir d'un CSV nettoyé, calculer :
   - nb lignes totales
   - nb lignes valides
   - nb anomalies
@@ -849,8 +849,10 @@ print({"total": total, "valid": valid, "anomalies": anomalies, "ca": ca})
 - paramètres vs arguments
 - return
 - arguments nommés / défaut / `*args`
+- point d'entrée `main` et `if __name__ == "__main__"`
+- `map`, `filter`, `sum`
 - typage
-- atelier CSV/Excel
+- atelier CSV
 
 ---
 
@@ -919,6 +921,47 @@ print(multiply(2, 3, 4))
 
 ---
 
+# Point d'entrée de script (`__main__`)
+
+```python
+def main() -> None:
+    print("Traitement J2")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+# map / filter / sum
+
+```python
+rows = [
+    {"email_valide": "true", "montant_net": "1200.50"},
+    {"email_valide": "false", "montant_net": "980.00"},
+    {"email_valide": "true", "montant_net": "450.00"},
+]
+
+valid_rows = list(filter(lambda r: r["email_valide"] == "true", rows))
+amounts = list(map(lambda r: float(r["montant_net"]), valid_rows))
+ca = sum(amounts)
+
+print("valid=", len(valid_rows))
+print("ca=", ca)
+```
+
+---
+
+# map / filter / sum vs boucle `for`
+
+- `map` : transformer chaque élément
+- `filter` : garder seulement les éléments voulus
+- `sum` : agréger des nombres
+- en débutant : garder la version `for` si c'est plus lisible
+
+---
+
 # Typage attendu
 
 - typer les signatures de fonctions
@@ -976,10 +1019,10 @@ print("tests manuels: OK")
 
 Pipeline métier :
 
-1. lire CSV/Excel
+1. lire CSV
 2. nettoyer données
 3. calcul KPI simples
-4. exporter CSV/Excel
+4. exporter CSV
 
 ---
 
@@ -994,18 +1037,6 @@ with open("entree.csv", newline="", encoding="utf-8") as f:
 
 ---
 
-# Exemple Excel (pandas)
-
-```python
-import pandas as pd
-
-df = pd.read_excel("entree.xlsx")
-df["email"] = df["email"].str.strip().str.lower()
-df.to_excel("sortie.xlsx", index=False)
-```
-
----
-
 # Livrable Jour 2
 
 Dossier attendu : `rendus/J2/`
@@ -1015,22 +1046,23 @@ Dossier attendu : `rendus/J2/`
 - `rendus/J2/src/j2_exo_c.py`
 - `rendus/J2/src/j2_exo_d.py`
 - `rendus/J2/src/script_j2_traitement.py`
-- `rendus/J2/output/sortie_j2.csv` ou `rendus/J2/output/sortie_j2.xlsx`
+- `rendus/J2/output/sortie_j2.csv`
 - `rendus/J2/README_execution.md`
 - `rendus/J2/tests_manuels.md`
 
 Validation :
 
 - pipeline complet exécutable (entrée -> sortie)
+- point d'entrée clair via `if __name__ == "__main__":`
 - résultats cohérents sur les cas de test fournis
 
 ---
 
 # Quiz flash Jour 2
 
-1. `return` vs `print` ?
-2. Quand utiliser `*args` ?
-3. Pourquoi typer les fonctions ?
+1. À quoi sert `if __name__ == "__main__":` ?
+2. Différence entre `map` et `filter` ?
+3. Quand garder une boucle `for` plutôt que `map/filter` ?
 
 ---
 
@@ -1045,6 +1077,7 @@ Validation :
 - API : principe
 - GET + token
 - JSON -> CSV
+- pandas + Excel
 - validations minimales
 
 ---
@@ -1092,6 +1125,30 @@ with open("api_orders.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["id", "client", "montant"])
     writer.writeheader()
     writer.writerows(rows)
+```
+
+---
+
+# Lecture Excel avec pandas
+
+```python
+import pandas as pd
+
+df = pd.read_excel("entree.xlsx")
+print(df.head(3))
+```
+
+---
+
+# Nettoyage et export Excel avec pandas
+
+```python
+import pandas as pd
+
+df = pd.read_excel("entree.xlsx")
+df["email"] = df["email"].astype(str).str.strip().str.lower()
+df["montant"] = df["montant"].astype(str).str.replace("€", "", regex=False)
+df.to_excel("sortie.xlsx", index=False)
 ```
 
 ---
