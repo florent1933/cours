@@ -1,0 +1,5 @@
+email,is_valid_email,montant
+alice@acme.com,True,"1200,50 €"
+bob@example.fr,True,980.00
+bob@example.fr,True,"1,980.00 $"
+bobexample.fr,True,"1,980.00 $"
