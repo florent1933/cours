@@ -1,0 +1,12 @@
+# Enterprise confidential data
+secret/*
+!secret/.gitkeep
+
+# Generated outputs
+output/*
+!output/.gitkeep
+
+# Local files
+.env
+__pycache__/
+*.pyc

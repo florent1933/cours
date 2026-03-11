@@ -1616,4 +1616,129 @@ Atteint / non atteint :
 
 ---
 
+# Bonus - Transformer un script Python en `.exe`
+
+Objectif :
+
+- distribuer un script Python à un utilisateur Windows sans lui faire lancer `python mon_script.py`
+- générer un exécutable à partir d'un script existant
+- comprendre les limites réelles du packaging
+
+---
+
+# Bonus - Pré-requis
+
+- environnement Python propre et fonctionnel
+- script exécutable en ligne de commande avant packaging
+- dépendances installées dans l'environnement courant
+- build `.exe` à faire sur Windows
+
+Règle :
+
+- si le script ne marche pas en `.py`, il ne marchera pas mieux en `.exe`
+
+---
+
+# Bonus - Installer PyInstaller
+
+Commande :
+
+```bash
+pip install pyinstaller
+```
+
+Vérification :
+
+```bash
+pyinstaller --version
+```
+
+---
+
+# Bonus - Commande minimale
+
+Exemple :
+
+```bash
+pyinstaller --onefile main.py
+```
+
+Résultat attendu :
+
+- un exécutable unique dans `dist/`
+- des fichiers de build dans `build/`
+- un fichier `main.spec`
+
+---
+
+# Bonus - Exemple appliqué au cours
+
+Depuis le dossier du script :
+
+```bash
+cd business_logic/script1
+pyinstaller --onefile --name transformateur_csv main.py
+```
+
+Exécution du binaire généré sous Windows :
+
+```bash
+dist\\transformateur_csv.exe --input input\\commandes_input_exemple.csv --output output\\resultat_exemple.csv
+```
+
+---
+
+# Bonus - Options utiles
+
+- `--onefile` : un seul exécutable
+- `--name mon_outil` : nommer le binaire
+- `--windowed` ou `--noconsole` : masquer la console pour une app graphique
+
+Exemple :
+
+```bash
+pyinstaller --onefile --name mon_outil main.py
+```
+
+---
+
+# Bonus - Ce que PyInstaller génère
+
+- `dist/` : livrable final
+- `build/` : fichiers temporaires de construction
+- `mon_script.spec` : configuration du packaging
+
+À ignorer dans Git :
+
+- `build/`
+- `dist/`
+- `*.spec` si vous ne souhaitez pas versionner la config de build
+
+---
+
+# Bonus - Limites importantes
+
+- pas de cross-compilation simple : pour faire un `.exe`, build sur Windows
+- certains antivirus peuvent ralentir ou bloquer un binaire `--onefile`
+- les chemins de fichiers relatifs doivent être testés après packaging
+- un `.exe` n'est pas une sécurité : le code reste distribuable, pas secret
+
+---
+
+# Bonus - Workflow propre
+
+1. valider le script Python en CLI
+2. figer les dépendances
+3. lancer `pyinstaller`
+4. tester le `.exe` sur un poste Windows propre
+5. documenter la commande d'exécution et les fichiers attendus
+
+À ne pas faire :
+
+- packager trop tôt
+- mélanger debug du script et debug du packaging
+- embarquer des fichiers sensibles dans le binaire
+
+---
+
 [fit] Fin de formation

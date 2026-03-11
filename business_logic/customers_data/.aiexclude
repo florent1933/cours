@@ -1,0 +1,10 @@
+# Never expose enterprise confidential files to Gemini Code Assist context
+secret/
+
+# Optional: keep generated artifacts out of context
+output/
+
+# Optional: local env files
+.env
+*.key
+*.pem
