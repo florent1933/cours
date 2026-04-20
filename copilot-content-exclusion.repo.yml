@@ -1,0 +1,34 @@
+# GitHub Copilot content exclusion
+# Paste this content into:
+# Repository Settings > Copilot > Content exclusion
+# Repository: https://github.com/florent1933/cours
+#
+# Notes:
+# - GitHub Copilot does not read this file automatically.
+# - This is a ready-to-paste ruleset for repository-level exclusion.
+# - Paths use the format documented by GitHub for repository exclusions.
+
+# Enterprise confidential zones
+- "/secret/**"
+- "**/secret/**"
+- "/business_logic/**/secret/**"
+
+# Useless for code generation context
+- "/cours/**"
+- "/officiel/**"
+- "/preparation/**"
+
+# Generated artifacts
+- "/output/**"
+- "**/output/**"
+- "/rendus/**/output/**"
+
+# Local secrets / credentials
+- ".env"
+- "*.env"
+- "*.key"
+- "*.pem"
+- "*.p12"
+
+# Large generated or binary artifacts
+- "*.pdf"

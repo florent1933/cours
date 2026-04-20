@@ -1,16 +1,20 @@
-# Pack Deckset - Formation Python debutant (3 jours)
+# Decks Deckset - Formations Python
 
 ## Contenu
-- `00_programme_3_jours.deckset.md` : deck principal (vue globale)
-- `01_jour_1_fondations.deckset.md` : cours complet Jour 1
-- `02_jour_2_donnees_csv_excel.deckset.md` : cours complet Jour 2
-- `03_jour_3_api_robustesse_miniprojet.deckset.md` : cours complet Jour 3
+- `formation_python_3_jours_complet.deckset.md` : deck complet de la formation Python débutant (3 jours)
+- `formation_python_3_jours_complet.deckset.pdf` : export PDF du deck débutant
+- `formation_intermediaire.deckset.md` : deck unique de la formation Python intermédiaire (3 jours)
 
-## Ligne pedagogique
+## Ligne pédagogique - Débutant
 - Public : debutants complets
 - Focus : automatisation + traitement de donnees
 - Hors scope : data visualisation, scraping web, Git
 - API : initiation guidee uniquement (GET simple + token + export CSV)
+
+## Ligne pédagogique - Intermédiaire
+- Public : profils métier ayant déjà suivi le cours débutant
+- Focus : `Polars`, notebook, Excel, debugger, `requests`, `logging`
+- Hors scope : sujets avancés non nécessaires à ce parcours
 
 ## Format
 - 3 jours, 21h total
@@ -29,3 +33,10 @@
 - `README_execution.md`
 - `donnees_exemple.csv`
 - `resultat_exemple.csv`
+
+## Livrables participants attendus - Intermédiaire
+- `analyse_metier.ipynb`
+- `script_final.py`
+- `output/resultat_final.csv` ou `output/resultat_final.xlsx`
+- `output/anomalies.csv`
+- `README_execution.md`

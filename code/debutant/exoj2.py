@@ -1,5 +1,5 @@
 from pprint import pprint
-from emails_utils import clean_email, is_valid_email, get_email_domain
+from code.debutant.emails_utils import clean_email, is_valid_email, get_email_domain
 
 orders = [
     {"email": "alice@acme.com", "montant": "1200,50 €"},

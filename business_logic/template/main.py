@@ -4,73 +4,123 @@ import argparse
 from pathlib import Path
 import sys
 
-# Allow direct execution: `python main.py` from script1/
+import polars as pl
+
+# Allow direct execution: `python main.py` from template/
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-from libs.csv_io import read_csv_rows, write_csv_rows
-from libs.cleaners import clean_email, normalize_amount, normalize_date
+from libs.cleaners import normalize_amount, normalize_date
 
 OUTPUT_FIELDS = [
     "commande_id",
     "client",
+    "email",
+    "montant",
+    "date_commande",
+    "statut",
     "email_clean",
     "email_valide",
     "montant_net",
-    "date_commande",
-    "statut",
+    "date_commande_clean",
+    "statut_normalise",
+    "ligne_valide",
     "anomalie",
 ]
 
 
-def transform_order_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
-    output_rows: list[dict[str, str]] = []
+def build_anomaly(row: dict[str, object]) -> str:
+    anomaly: list[str] = []
+    raw_date = str(row.get("date_commande_source") or "").strip()
 
-    for row in rows:
-        raw_date = row.get("date_commande", "")
-        email_clean, email_ok = clean_email(row.get("email", ""))
-        amount = normalize_amount(row.get("montant", ""))
-        date_clean = normalize_date(raw_date)
-        anomaly = []
+    if not bool(row.get("email_valide")):
+        anomaly.append("email_invalide")
+    if row.get("montant_net") is None:
+        anomaly.append("montant_invalide")
+    if row.get("date_commande_clean") is None and raw_date:
+        anomaly.append("date_invalide")
 
-        if not email_ok:
-            anomaly.append("email_invalide")
-        if amount is None:
-            anomaly.append("montant_invalide")
-        if date_clean is None and raw_date.strip():
-            anomaly.append("date_invalide")
+    return "|".join(anomaly)
 
-        output_rows.append(
-            {
-                "commande_id": str(row.get("commande_id", "")),
-                "client": str(row.get("client", "")).strip(),
-                "email_clean": email_clean,
-                "email_valide": str(email_ok).lower(),
-                "montant_net": "" if amount is None else f"{amount:.2f}",
-                "date_commande": date_clean or "",
-                "statut": str(row.get("statut", "")).strip(),
-                "anomalie": "|".join(anomaly),
-            }
+
+def transform_orders_frame(df: pl.DataFrame) -> pl.DataFrame:
+    transformed = (
+        df.with_columns(
+            [
+                pl.col("commande_id").cast(pl.Utf8),
+                pl.col("client").cast(pl.Utf8).str.strip_chars().alias("client"),
+                pl.col("email").cast(pl.Utf8).fill_null("").alias("email"),
+                pl.col("montant").cast(pl.Utf8).fill_null("").alias("montant"),
+                pl.col("date_commande")
+                .cast(pl.Utf8)
+                .fill_null("")
+                .alias("date_commande_source"),
+                pl.col("statut").cast(pl.Utf8).fill_null("").alias("statut"),
+            ]
         )
+        .with_columns(
+            [
+                pl.col("email")
+                .str.strip_chars()
+                .str.to_lowercase()
+                .alias("email_clean"),
+                pl.col("montant")
+                .map_elements(normalize_amount, return_dtype=pl.Float64)
+                .alias("montant_net"),
+                pl.col("date_commande_source")
+                .map_elements(normalize_date, return_dtype=pl.Utf8)
+                .alias("date_commande_clean"),
+                pl.col("statut")
+                .str.strip_chars()
+                .str.to_lowercase()
+                .alias("statut_normalise"),
+            ]
+        )
+        .with_columns(
+            [
+                (
+                    pl.col("email_clean").str.contains("@", literal=True)
+                    & pl.col("email_clean").str.contains(".", literal=True)
+                ).alias("email_valide"),
+                (
+                    pl.col("montant_net").is_not_null()
+                    & pl.col("date_commande_clean").is_not_null()
+                    & pl.col("email_clean").str.len_chars().gt(0)
+                ).alias("ligne_valide"),
+            ]
+        )
+        .with_columns(
+            [
+                pl.struct(
+                    [
+                        "email_valide",
+                        "montant_net",
+                        "date_commande_clean",
+                        "date_commande_source",
+                    ]
+                )
+                .map_elements(build_anomaly, return_dtype=pl.Utf8)
+                .alias("anomalie")
+            ]
+        )
+        .select(OUTPUT_FIELDS)
+    )
 
-    return output_rows
+    return transformed
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="input/commandes_input_exemple.csv")
     parser.add_argument("--output", default="output/resultat_exemple.csv")
-    parser.add_argument("--secret-dir", default="secret")
     args = parser.parse_args()
 
-    secret_dir = Path(args.secret_dir)
-    if not secret_dir.exists():
-        raise SystemExit("Missing secret directory")
-
-    rows = read_csv_rows(Path(args.input))
-    output_rows = transform_order_rows(rows)
-    write_csv_rows(Path(args.output), OUTPUT_FIELDS, output_rows)
+    df = pl.read_csv(args.input)
+    output_df = transform_orders_frame(df)
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_df.write_csv(output_path)
     print(f"OK -> {args.output}")
 
 

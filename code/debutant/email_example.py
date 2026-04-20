@@ -1,4 +1,4 @@
-from emails_utils import clean_email, is_valid_email, get_email_domain
+from code.debutant.emails_utils import clean_email, is_valid_email, get_email_domain
 
 email = "   @yo.x@gmail.com"
 print(clean_email(email))
