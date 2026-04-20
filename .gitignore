@@ -17,8 +17,7 @@ rendus/**/output/
 *.pem
 *.p12
 
-# Large generated or binary artifacts
-*.pdf
+
 
 # ================================
 # Python
