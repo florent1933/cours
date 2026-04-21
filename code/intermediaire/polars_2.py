@@ -1,11 +1,7 @@
 import polars as pl
 
-df = pl.DataFrame(
-    {
-        "client": [" alice", "aba", "Charlie", "David", "Eve"],
-        "montant": [1200.50, 850.75, 950.00, 1100.00, 1050.25],
-        "statut": ["ok", "pending", None, "ok", "pending"],
-    }
+df = pl.read_csv(
+    "cours/jeux_de_donnees/ecommerce_pedagogique/input/commandes_brutes.csv"
 )
 
 
@@ -20,3 +16,13 @@ print(df.schema)
 
 
 print(df.describe())
+
+
+dff = df.select(pl.all().exclude("region", "statut", "date_commande"))
+print(dff)
+
+
+print(df.select(pl.col("date_commande")))
+
+
+dff = df.select(pl.col("client", "email", "statut"))
