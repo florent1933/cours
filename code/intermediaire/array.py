@@ -56,3 +56,6 @@ def remove_accent(s: str) -> str:
 print("upper string rodrique", to_upper_string("Rodrigue") == "RODRIGUE")
 print("remove accent", remove_accent("Rodrigué") == "Rodrigue")
 print("remove accent", remove_accent("Ródrigue") == "Rodrigue")
+
+
+"-".join(["a", "b", "c", "d", "e"])  # "a-b-c-de"
