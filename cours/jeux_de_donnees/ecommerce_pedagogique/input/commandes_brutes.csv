@@ -1,0 +1,31 @@
+commande_id,customer_id,client,email,montant,date_commande,statut,categorie,sous_categorie,quantite,profit,mode_paiement,region
+5001,C001,Acme, orders@acme.com ,"1 200,50 €",21/03/2026,ok,Bureautique,Papeterie,12,180.50,Carte,Ile-de-France
+5002,C002,Beta Corp,contact_beta.fr,980.00,2026-03-02,OK,Informatique,Ecran,4,220.00,Virement,Auvergne-Rhone-Alpes
+5003,C003,Gamma SA,gamma@gamma.com,,2026-03-03,pending,Mobilier,Chaise,2,95.00,Carte,Nouvelle-Aquitaine
+5004,C004,Delta,delta@delta.com,"450,00",2026-03-04,ok,Bureautique,Classement,10,60.00,Cheque,Occitanie
+5005,C005,Epsilon,epsiLon@corp.fr ,"1,980.00 $",05/03/2026, ok ,Informatique,Clavier,8,310.00,Carte,Ile-de-France
+5006,C006,Zeta Conseil,zeta@conseil.fr,"2 340,00 €",31/02/2026,pending,Services,Audit,1,540.00,Virement,Provence-Alpes-Cote d Azur
+5007,C007,Eta,,320.00,2026-03-07,ok,Bureautique,Agenda,16,40.00,Carte,Grand Est
+5008,C008,Theta,theta@theta.com,"89,90 €",08/03/2026,annule,Mobilier,Lampe,3,12.00,Especes,Bretagne
+5009,C009,Iota,iota@iota.com,560,2026/03/09,pending,Informatique,Souris,14,88.00,Carte,Normandie
+5010,C010,Kappa,sales@kappa.fr,"1 050,00 €",10/03/2026,ok,Bureautique,Impression,5,150.00,Virement,Hauts-de-France
+5011,C011,Lambda,lambda@lambda.com,N/A,11/03/2026,pending,Services,Formation,1,0.00,Carte,Ile-de-France
+5012,C012,Mu Studio,mu@studio.com,"670,40 €",2026-03-12,OK,Mobilier,Bureau,2,124.00,Carte,Pays de la Loire
+5013,C002,Beta Corp,contact@beta.fr,540.00,13/03/2026,ok,Informatique,Webcam,6,75.00,Virement,Auvergne-Rhone-Alpes
+5014,C013,Nu SARL,nu@sarl.fr,"1 499,99 €",14/03/2026,pending,Informatique,Imprimante,2,260.00,Carte,Centre-Val de Loire
+5015,C014,Xi,xi xi.fr,"210,00",15/03/2026,ok,Bureautique,Etiquettes,9,32.00,Cheque,Bourgogne-Franche-Comte
+5016,C015,Omicron,omicron@corp.com,"2 050,00 €",2026-03-16,ok,Services,Accompagnement,1,480.00,Virement,Ile-de-France
+5017,C016,Pi,pi@pi.com,99.99,17/03/2026,pending,Bureautique,Fournitures,20,18.00,Carte,Occitanie
+5018,C017,Rho,rho@rho.com ,"760,00 €",2026-03-18,ok,Mobilier,Caisson,3,110.00,Carte,Grand Est
+5019,C018,Sigma,sigma@sigma.com,"1 120,70 €",18/03/2026,EN ATTENTE,Informatique,Casque,7,145.00,Carte,Ile-de-France
+5020,C019,Tau,tau@tau.com,390.00,19/03/2026,ok,Bureautique,Archivage,11,58.00,Especes,Nouvelle-Aquitaine
+5021,C020,Upsilon,upsilon@upsilon.com,0,20/03/2026,pending,Services,Support,1,-20.00,Virement,PACA
+5022,C021,Phi,phi@phi.com,"1 890,00 €",21/03/2026,ok,Mobilier,Armoire,2,320.00,Carte,Bretagne
+5023,C022,Chi,chi@chi.com,"155,35 €",2026-03-22,ok,Bureautique,Stylos,30,25.00,Carte,Normandie
+5024,C023,Psi,psi@psi.com,"2 890,00 €",23/03/2026,pending,Informatique,Ordinateur,2,540.00,Virement,Ile-de-France
+5025,C024,Omega,omega@omega,"780,00 €",24/03/2026,ok,Bureautique,Cartouches,6,92.00,Carte,Pays de la Loire
+5026,C025,Atlas,atlas@atlas.com,1 340.40,2026-03-25,ok,Informatique,Dock,5,170.00,Carte,Grand Est
+5027,C026,Boreal,boreal@corp.fr,450 €,26/03/2026,pending,Services,Installation,1,84.00,Cheque,Hauts-de-France
+5028,C027,Celsius,celsius@celsius.com,"610,50 €",27/03/2026,ok,Mobilier,Support ecran,4,75.00,Carte,Occitanie
+5029,C028,Dynamo,dynamo@dynamo.com,"  999,99 € ",2026-03-28,OK,Informatique,Routeur,3,133.00,Carte,Ile-de-France
+5030,C029,Equinoxe,equinoxe@equinoxe.com,"1 075,00 €",29/03/2026,ok,Bureautique,Reliure,13,165.00,Virement,Centre-Val de Loire

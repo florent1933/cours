@@ -54,7 +54,7 @@
 - extension Python
 - extension Jupyter
 - `polars`
-- `altair`
+- `altair` comme backend de `df.plot`
 - `requests`
 
 ---
@@ -886,6 +886,27 @@ Objectif :
 
 ---
 
+# Compter rapidement les valeurs d’une colonne avec `value_counts()`
+
+```python
+df["statut_normalise"].value_counts(sort=True)
+```
+
+- utile pour voir immédiatement la répartition d’une colonne catégorielle
+- très pratique dans un notebook en phase d’exploration
+- bon réflexe avant un graphique ou une règle métier
+
+---
+
+# Quand utiliser `value_counts()` plutôt que `group_by`
+
+- `value_counts()` : compter vite une seule colonne
+- `group_by(...)` : calculer plusieurs indicateurs
+- les deux répondent à des besoins proches
+- `value_counts()` est souvent le point d’entrée le plus simple
+
+---
+
 # Agréger = résumer un tableau
 
 ```python
@@ -977,6 +998,47 @@ df.select([
 
 ---
 
+# Créer une colonne métier conditionnelle avec `when / then / otherwise`
+
+```python
+df = df.with_columns(
+    pl.when(pl.col("ligne_valide"))
+    .then(pl.lit("ok"))
+    .otherwise(pl.lit("a_corriger"))
+    .alias("statut_qualite")
+)
+```
+
+- équivalent d’un `if / else` sur une colonne
+- très utile pour rendre un contrôle qualité lisible
+- utiliser `pl.lit(...)` pour écrire une vraie valeur texte
+- chaque branche doit être valide même si la condition ne passe pas
+
+---
+
+# Gérer plusieurs cas avec `when / then / otherwise`
+
+```python
+df = df.with_columns(
+    pl.when(pl.col("montant_net").is_null())
+    .then(pl.lit("montant_invalide"))
+    .when(
+        pl.col("email_clean").is_null()
+        | pl.col("email_clean").str.contains("@", literal=True).not_()
+    )
+    .then(pl.lit("email_invalide"))
+    .otherwise(pl.lit("ok"))
+    .alias("motif_qualite")
+)
+```
+
+- premier cas vrai = valeur retenue
+- lecture proche d’un `if / elif / else`
+- pratique pour expliquer une anomalie ligne par ligne
+- point de vigilance : `Polars` évalue les expressions de branche indépendamment
+
+---
+
 # Vérifier l’effet réel du nettoyage
 
 ```python
@@ -1041,7 +1103,7 @@ df_chart = df.group_by("statut_normalise").agg(
 ```
 
 - un graphique part d’une table déjà agrégée
-- `Altair` n’est pas là pour nettoyer les données
+- `df.plot` n’est pas là pour nettoyer les données
 - le nettoyage et les comptages se font d’abord avec `Polars`
 
 ---
@@ -1049,12 +1111,19 @@ df_chart = df.group_by("statut_normalise").agg(
 # Graphique 1 - Répartition des statuts
 
 ```python
-import altair as alt
-
-alt.Chart(df_chart).mark_bar().encode(
-    x=alt.X("statut_normalise:N", title="Statut"),
-    y=alt.Y("nb_lignes:Q", title="Nombre de lignes"),
+chart = (
+    df_chart.plot.bar(
+        x="statut_normalise",
+        y="nb_lignes",
+        color="statut_normalise",
+    )
+    .properties(width=500, title="Repartition des statuts")
+    .configure_scale(zero=False)
+    .configure_axisX(labelAngle=0)
 )
+chart.encoding.x.title = "Statut"
+chart.encoding.y.title = "Nombre de lignes"
+chart
 ```
 
 - nombre de lignes par statut
@@ -1081,10 +1150,19 @@ df_anomalies = pl.DataFrame(
 # Graphique 2 - Nombre d’anomalies
 
 ```python
-alt.Chart(df_anomalies).mark_bar(color="crimson").encode(
-    x="type_anomalie:N",
-    y="nb_lignes:Q",
+chart = (
+    df_anomalies.plot.bar(
+        x="type_anomalie",
+        y="nb_lignes",
+        color="type_anomalie",
+    )
+    .properties(width=500, title="Nombre d anomalies")
+    .configure_scale(zero=False)
+    .configure_axisX(labelAngle=0)
 )
+chart.encoding.x.title = "Type d anomalie"
+chart.encoding.y.title = "Nombre de lignes"
+chart
 ```
 
 - anomalies par type
@@ -1108,10 +1186,19 @@ df_categories = df.group_by("categorie").agg(
 # Graphique 3 - Volumétrie par catégorie
 
 ```python
-alt.Chart(df_categories).mark_bar().encode(
-    x="categorie:N",
-    y="montant_total:Q",
+chart = (
+    df_categories.plot.bar(
+        x="categorie",
+        y="montant_total",
+        color="categorie",
+    )
+    .properties(width=500, title="Volumetrie par categorie")
+    .configure_scale(zero=False)
+    .configure_axisX(labelAngle=0)
 )
+chart.encoding.x.title = "Categorie"
+chart.encoding.y.title = "Montant total"
+chart
 ```
 
 - catégorie métier
@@ -1142,11 +1229,20 @@ Consigne :
 # Correction J2-B
 
 ```python
-chart = alt.Chart(df_chart).mark_bar().encode(
-    x="statut_normalise:N",
-    y="nb_lignes:Q",
-    tooltip=["statut_normalise", "nb_lignes"],
-).properties(title="Répartition des statuts")
+chart = (
+    df_chart.plot.bar(
+        x="statut_normalise",
+        y="nb_lignes",
+        color="statut_normalise",
+        tooltip=["statut_normalise", "nb_lignes"],
+    )
+    .properties(width=500, title="Repartition des statuts")
+    .configure_scale(zero=False)
+    .configure_axisX(labelAngle=0)
+)
+chart.encoding.x.title = "Statut"
+chart.encoding.y.title = "Nombre de lignes"
+chart
 ```
 
 - graphique lisible
@@ -1488,7 +1584,9 @@ Objectif :
 # Quiz flash Jour 2
 
 - rôle de `group_by`
-- rôle d’`Altair`
+- rôle de `value_counts()`
+- rôle de `df.plot`
+- rôle de `when / then / otherwise`
 - différence notebook / script
 - rôle du debugger
 
@@ -1497,7 +1595,9 @@ Objectif :
 # Récapitulatif Jour 2
 
 - contrôler
+- compter rapidement des catégories avec `value_counts()`
 - visualiser
+- créer des colonnes conditionnelles métier
 - lire / écrire Excel
 - structurer un script
 - déboguer

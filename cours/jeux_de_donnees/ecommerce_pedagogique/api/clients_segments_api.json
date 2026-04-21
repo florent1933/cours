@@ -1,0 +1,147 @@
+[
+  {
+    "customer_id": "C001",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C002",
+    "city": "Lyon",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C003",
+    "city": "Bordeaux",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C004",
+    "city": "Toulouse",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C005",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C006",
+    "city": "Marseille",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C007",
+    "city": "Reims",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C008",
+    "city": "Rennes",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C009",
+    "city": "Rouen",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C010",
+    "city": "Lille",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C011",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C012",
+    "city": "Nantes",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C013",
+    "city": "Orleans",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C014",
+    "city": "Dijon",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C015",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C016",
+    "city": "Montpellier",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C017",
+    "city": "Strasbourg",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C018",
+    "city": "Metz",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C019",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C020",
+    "city": "Poitiers",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C021",
+    "city": "Nice",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C022",
+    "city": "Brest",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C023",
+    "city": "Caen",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C024",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C025",
+    "city": "Nancy",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C026",
+    "city": "Amiens",
+    "segment": "TPE"
+  },
+  {
+    "customer_id": "C027",
+    "city": "Tours",
+    "segment": "PME"
+  },
+  {
+    "customer_id": "C028",
+    "city": "Paris",
+    "segment": "Grand compte"
+  },
+  {
+    "customer_id": "C029",
+    "city": "Tours",
+    "segment": "PME"
+  }
+]
