@@ -71,7 +71,7 @@
 
 # Organisation des livrables
 
-- `analyse_metier.ipynb`
+- `script_exploration.py`
 - `script_final.py`
 - `output/resultat_final.csv` ou `output/resultat_final.xlsx`
 - `output/anomalies.csv`
@@ -95,7 +95,7 @@ Cas fil rouge sur les `3 jours` :
 
 - Jour 1 : notebook, `Polars`, premières transformations
 - Jour 2 : contrôle qualité, Excel, passage au script, debugger
-- Jour 3 : API, configuration, `logging`, mini-projet final
+- Jour 3 : gros volume, agrégations, jointure FX, API réelle, `logging` minimal, bonus debugger
 
 ---
 
@@ -1606,506 +1606,899 @@ Objectif :
 
 # Jour 3
 
-## API + logging + mini-projet final
+## Volume + agrégations + jointure FX + API réelle + bonus debugger
 
 ---
 
 # Jour 3 - objectifs
 
-- consommer une API simple
-- joindre les données à l’existant
-- configurer proprement un script
-- fiabiliser avec `logging`
-- terminer un mini-projet complet
+- lire un dataset de 10 000+ lignes sans se perdre
+- faire plus d'agrégations utiles
+- joindre des taux de change sur `date + country`
+- enrichir avec une API réelle
+- terminer par un bonus debugger séparé
 
 ---
 
-# Ce qu’on doit savoir faire à la fin
+# Support du jour
 
-- exécuter un traitement complet
-- lire une sortie
-- expliquer les anomalies
-- modifier un paramètre
-- livrer un résultat propre
+Fichiers utilisés :
 
----
-
-# Quand le fichier local ne suffit plus
-
-- une API renvoie des données
-- ici : usage simple en lecture
-- pas de complexité inutile
+- `cours/jeux_de_donnees/ecommerce_pedagogique/input/commandes_volume_j3.csv`
+- `cours/jeux_de_donnees/ecommerce_pedagogique/input/daily_j3.csv`
+- `cours/jeux_de_donnees/ecommerce_pedagogique/api/rest_countries_fallback_j3.json`
+- `code/intermediaire/j3_volume_fx_api.py`
+- `code/intermediaire/j3_bonus_debugger_bug.py`
+- `code/intermediaire/j3_bonus_debugger_fix.py`
 
 ---
 
-# Appeler une source externe
+# Ce qui change par rapport à J1 et J2
+
+- le dataset est beaucoup plus grand : `10 500` lignes
+- on ne lit plus tout à l'oeil
+- on prépare vite des colonnes de travail
+- on agrège avant et après enrichissement
+- on garde le logging dans le script final, pas dans un chapitre à part
+
+---
+
+# Pourquoi le volume change la lecture du DataFrame
+
+Sur `30` lignes, on peut presque tout regarder.
+
+Sur `10 500` lignes, on travaille autrement :
+
+- volumétrie
+- schéma
+- nulls
+- statistiques rapides
+- agrégations ciblées
+
+---
+
+# Lire un jeu de données plus grand
 
 ```python
-import requests
+import polars as pl
 
-url = "https://api.exemple.local/customers"
-r = requests.get(url, timeout=20)
+df = pl.read_csv(
+    "cours/jeux_de_donnees/ecommerce_pedagogique/input/commandes_volume_j3.csv"
+)
+
+print(df.shape)
+print(df.head())
 ```
 
-- base du bloc API
+- premier réflexe : taille + aperçu
+- pas de nettoyage lourd à ce stade
 
 ---
 
-# Éviter qu’un appel externe bloque tout
-
-- éviter qu’un script reste bloqué
-- rendre l’exécution plus robuste
-
----
-
-# Lire la réponse utile de l’API
+# Premiers contrôles rapides sur gros volume
 
 ```python
-payload = r.json()
+print(df.schema)
+print(df.null_count())
+print(df.describe())
+
+preview = df.select([
+    "commande_id",
+    "date_commande",
+    "categorie",
+    "montant",
+    "statut",
+    "country",
+]).head(10)
 ```
 
-- structure fréquente côté API
+- `schema` : types inférés
+- `null_count()` : trous visibles vite
+- `describe()` : ordre de grandeur
 
 ---
 
-# Exemple de payload JSON
+# Préparer des colonnes de travail
 
 ```python
-[
-    {"customer_id": 101, "city": "Paris", "segment": "B2B"},
-    {"customer_id": 102, "city": "Lyon", "segment": "PME"},
-]
+def parse_amount(raw: str | None) -> float | None:
+    value = (raw or "").strip()
+    if not value or value.upper() == "N/A":
+        return None
+
+    value = value.replace("€", "").replace("$", "").replace(" ", "")
+
+    if "," in value and "." in value:
+        if value.rfind(",") > value.rfind("."):
+            value = value.replace(".", "").replace(",", ".")
+        else:
+            value = value.replace(",", "")
+    elif "," in value:
+        value = value.replace(",", ".")
+
+    try:
+        return float(value)
+    except ValueError:
+        return None
 ```
 
-- une liste de dictionnaires
-- forme classique pour créer un `DataFrame`
+- on prépare une colonne dérivée
+- on ne détruit pas la colonne source `montant`
 
 ---
 
-# Ramener la réponse API dans le même format de travail
+# Parser les dates sans casser la source
 
 ```python
-df_api = pl.DataFrame(payload).select([
-    "customer_id",
-    "city",
-    "segment",
-])
+def parse_date_expr(column_name: str) -> pl.Expr:
+    return pl.coalesce(
+        [
+            pl.col(column_name).str.strptime(pl.Date, format="%Y-%m-%d", strict=False),
+            pl.col(column_name).str.strptime(pl.Date, format="%d/%m/%Y", strict=False),
+            pl.col(column_name).str.strptime(pl.Date, format="%Y/%m/%d", strict=False),
+        ]
+    )
 ```
 
-- convertir une réponse exploitable en table
+- plusieurs formats possibles
+- une seule colonne dérivée : `order_date`
 
 ---
 
-# Enrichir le fichier local avec la donnée externe
+# Construire le DataFrame exploitable
 
 ```python
-df_local = pl.read_csv("input/clients.csv")
-
-df_final = df_local.join(
-    df_api,
-    on="customer_id",
-    how="left",
+df = (
+    df.with_columns(
+        [
+            pl.col("quantite").cast(pl.Int64, strict=False),
+            parse_date_expr("date_commande").alias("order_date"),
+            pl.col("montant")
+            .map_elements(parse_amount, return_dtype=pl.Float64)
+            .alias("montant_net"),
+            pl.col("statut")
+            .str.strip_chars()
+            .str.to_uppercase()
+            .alias("statut_normalise"),
+        ]
+    )
+    .with_columns(
+        pl.col("order_date").dt.strftime("%Y-%m").alias("mois_commande")
+    )
 )
 ```
 
-- enrichir un export existant
-- aligner une clé
-- produire une table consolidée
+- `map_elements()` reste utile quand la logique Python est plus simple
+- à partir d'ici, on agrège sur les colonnes dérivées
 
 ---
 
-# Ne pas planter silencieusement sur un appel API
+# Compter vite avec `value_counts()`
 
 ```python
-try:
-    r = requests.get(url, timeout=20)
-    r.raise_for_status()
-    payload = r.json()
-except requests.RequestException as exc:
-    print(f"Erreur API: {exc}")
+status_counts = (
+    df.select(pl.col("statut_normalise").value_counts(sort=True))
+    .unnest("statut_normalise")
+)
+
+print(status_counts)
 ```
 
-- vérifier le code de retour
-- utiliser `try / except`
-- garder un message clair
+- parfait pour un premier contrôle métier
+- ici : nombre de commandes par statut
 
 ---
 
-# Exercice J3-A - Récupérer et transformer une réponse API
+# CA par catégorie
+
+```python
+ca_par_categorie = (
+    df.group_by("categorie")
+    .agg(
+        [
+            pl.len().alias("nb_commandes"),
+            pl.col("customer_id").n_unique().alias("nb_clients_uniques"),
+            pl.col("montant_net").sum().round(2).alias("montant_total"),
+            pl.col("montant_net").mean().round(2).alias("montant_moyen"),
+        ]
+    )
+    .sort("montant_total", descending=True)
+)
+```
+
+- `sum`
+- `mean`
+- `n_unique`
+- `sort`
+
+---
+
+# CA par pays
+
+```python
+ca_par_pays = (
+    df.group_by("country")
+    .agg(
+        [
+            pl.len().alias("nb_commandes"),
+            pl.col("customer_id").n_unique().alias("nb_clients_uniques"),
+            pl.col("montant_net").sum().round(2).alias("montant_total"),
+        ]
+    )
+    .sort("montant_total", descending=True)
+)
+```
+
+- lecture business immédiate
+- utile avant la jointure FX
+
+---
+
+# CA par pays et catégorie
+
+```python
+ca_par_pays_categorie = (
+    df.group_by(["country", "categorie"])
+    .agg(
+        [
+            pl.len().alias("nb_commandes"),
+            pl.col("customer_id").n_unique().alias("nb_clients_uniques"),
+            pl.col("montant_net").sum().round(2).alias("montant_total"),
+        ]
+    )
+    .sort(["country", "montant_total"], descending=[False, True])
+)
+```
+
+- agrégation plus riche
+- meilleure préparation avant enrichissement externe
+
+---
+
+# Exercice J3-A - Explorer et agréger le gros dataset
 
 Consigne :
 
-- appeler une API simple
-- lire le JSON
-- produire une table `Polars`
-- préparer une jointure
+- lire `commandes_volume_j3.csv`
+- créer `order_date`, `montant_net`, `statut_normalise`, `mois_commande`
+- produire :
+  - un `value_counts()` des statuts
+  - un CA par `categorie`
+  - un CA par `country`
 
 ---
 
 # Correction J3-A
 
 ```python
-import requests
 import polars as pl
 
-r = requests.get(url, timeout=20)
-r.raise_for_status()
-payload = r.json()
-df_api = pl.DataFrame(payload).select([
-    "customer_id",
-    "city",
-    "segment",
-])
+
+df = pl.read_csv(
+    "cours/jeux_de_donnees/ecommerce_pedagogique/input/commandes_volume_j3.csv"
+)
+
+df = (
+    df.with_columns(
+        [
+            parse_date_expr("date_commande").alias("order_date"),
+            pl.col("montant")
+            .map_elements(parse_amount, return_dtype=pl.Float64)
+            .alias("montant_net"),
+            pl.col("statut").str.strip_chars().str.to_uppercase().alias("statut_normalise"),
+            pl.col("quantite").cast(pl.Int64, strict=False),
+        ]
+    )
+    .with_columns(pl.col("order_date").dt.strftime("%Y-%m").alias("mois_commande"))
+)
+
+status_counts = (
+    df.select(pl.col("statut_normalise").value_counts(sort=True))
+    .unnest("statut_normalise")
+)
+
+ca_par_categorie = (
+    df.group_by("categorie")
+    .agg(pl.col("montant_net").sum().round(2).alias("montant_total"))
+    .sort("montant_total", descending=True)
+)
+
+ca_par_pays = (
+    df.group_by("country")
+    .agg(pl.col("montant_net").sum().round(2).alias("montant_total"))
+    .sort("montant_total", descending=True)
+)
 ```
 
-- requête correcte
-- `timeout` présent
-- JSON exploité
-- table prête pour la suite
+---
+
+# Pourquoi préparer la jointure devise
+
+Le besoin métier est simple :
+
+- le montant source est traité comme une base USD
+- on veut un montant converti selon le pays et la date
+- la clé de jointure n'est pas seulement le pays
+- il faut `date + country`
 
 ---
 
-# Pourquoi ne jamais mettre un token dans le code
-
-- fuite de secret
-- partage involontaire
-- maintenance difficile
-
----
-
-# Paramétrer le script sans modifier le code
-
-```bash
-export API_TOKEN="token_exemple"
-python script_final.py
-```
-
-- bon endroit pour un token ou une clé
-- permet de garder le code propre
-
----
-
-# Lire la configuration côté Python
+# Lire le sous-ensemble de `daily.csv`
 
 ```python
-import os
+rates_df = pl.read_csv(
+    "cours/jeux_de_donnees/ecommerce_pedagogique/input/daily_j3.csv"
+)
 
-token = os.environ.get("API_TOKEN")
+print(rates_df.head())
+print(rates_df.schema)
 ```
 
-- simple
-- standard
-- sécurisé à l’échelle du cours
+- `daily_j3.csv` garde le même schéma que la source `daily.csv`
+- on a seulement réduit le volume pour le cours
 
 ---
 
-# Séparer données réelles et zone de travail
+# Aligner les clés de jointure
 
-- stocker ce qui ne doit pas être diffusé
-- ne jamais l’utiliser comme support de démo
-- travailler sur des fichiers d’exemple
+```python
+rates_df = (
+    rates_df.with_columns(
+        [
+            parse_date_expr("Date").alias("order_date"),
+            pl.col("Country").alias("country"),
+            pl.col("Exchange rate").cast(pl.Float64).alias("exchange_rate"),
+        ]
+    )
+    .select(["order_date", "country", "exchange_rate"])
+    .drop_nulls()
+)
+```
+
+- même nom de colonnes des deux côtés
+- mêmes types des deux côtés
 
 ---
 
-# Travailler sur un faux jeu de données fidèle
+# Joindre `daily.csv` sur date et pays
 
-- même structure
-- fausses données
-- même logique de traitement
+```python
+fx_df = df.join(
+    rates_df,
+    on=["order_date", "country"],
+    how="left",
+)
+```
+
+- jointure gauche : on garde toutes les commandes
+- si le taux manque, on le voit tout de suite
 
 ---
 
-# Exercice J3-B - Paramétrer un script avec token et chemins
+# Calculer les montants convertis
+
+```python
+fx_df = fx_df.with_columns(
+    [
+        (pl.col("montant_net") * pl.col("exchange_rate"))
+        .round(2)
+        .alias("montant_converti"),
+        pl.col("exchange_rate").is_null().alias("fx_manquant"),
+    ]
+)
+```
+
+- nouvelle colonne métier
+- plus une colonne de contrôle
+
+---
+
+# Agrégations utiles après la jointure FX
+
+```python
+fx_resume = (
+    fx_df.group_by("country")
+    .agg(
+        [
+            pl.len().alias("nb_commandes"),
+            pl.col("fx_manquant").sum().alias("nb_fx_manquants"),
+            pl.col("montant_converti").sum().round(2).alias("montant_converti_total"),
+        ]
+    )
+    .sort("montant_converti_total", descending=True)
+)
+```
+
+- on vérifie la qualité de la jointure
+- on lit déjà une première synthèse convertie
+
+---
+
+# Exercice J3-B - Jointure devise
 
 Consigne :
 
-- lire un token depuis l’environnement
-- paramétrer l’entrée et la sortie
-- garder le code sans secret en dur
+- lire `daily_j3.csv`
+- préparer `order_date`, `country`, `exchange_rate`
+- joindre sur `order_date + country`
+- créer `montant_converti`
+- compter les lignes avec taux manquant
 
 ---
 
 # Correction J3-B
 
 ```python
-import os
+rates_df = (
+    pl.read_csv("cours/jeux_de_donnees/ecommerce_pedagogique/input/daily_j3.csv")
+    .with_columns(
+        [
+            parse_date_expr("Date").alias("order_date"),
+            pl.col("Country").alias("country"),
+            pl.col("Exchange rate").cast(pl.Float64).alias("exchange_rate"),
+        ]
+    )
+    .select(["order_date", "country", "exchange_rate"])
+)
 
-token = os.environ.get("API_TOKEN")
-input_path = os.environ.get("INPUT_PATH", "input/clients.csv")
-output_path = os.environ.get("OUTPUT_PATH", "output/resultat.csv")
+fx_df = (
+    df.join(rates_df, on=["order_date", "country"], how="left")
+    .with_columns(
+        [
+            (pl.col("montant_net") * pl.col("exchange_rate")).round(2).alias("montant_converti"),
+            pl.col("exchange_rate").is_null().alias("fx_manquant"),
+        ]
+    )
+)
 
-if not token:
-    raise SystemExit("API_TOKEN manquant")
+nb_fx_manquants = fx_df.filter(pl.col("fx_manquant")).height
+print(nb_fx_manquants)
 ```
 
-- variable d’environnement lue correctement
-- chemins séparés
-- aucun secret dans le code
+---
+
+# Pourquoi enrichir avec une API réelle
+
+- le CSV local ne contient pas tout
+- on veut `region` et `subregion`
+- l'appel est simple, en lecture seule
+- on garde un fallback local si la salle n'a plus de réseau
 
 ---
 
-# Suivre ce que fait le script en production
-
-- suivre ce que fait le script
-- comprendre un échec
-- garder une trace utile
-
----
-
-# Mettre en place une trace minimale
+# Appeler Rest Countries avec `requests`
 
 ```python
-import logging
+import requests
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s %(message)s",
+endpoint = "https://restcountries.com/v3.1/all?fields=name,region,subregion"
+response = requests.get(endpoint, timeout=20)
+response.raise_for_status()
+payload = response.json()
+```
+
+- un seul appel
+- `timeout` obligatoire
+- `raise_for_status()` obligatoire
+
+---
+
+# Exemple minimal du JSON API
+
+```python
+[
+    {
+        "name": {"common": "Australia"},
+        "region": "Oceania",
+        "subregion": "Australia and New Zealand",
+    },
+    {
+        "name": {"common": "Canada"},
+        "region": "Americas",
+        "subregion": "North America",
+    },
+]
+```
+
+- on ne garde que les champs utiles
+- pas besoin de tout charger mentalement
+
+---
+
+# Transformer le JSON API en DataFrame
+
+```python
+def countries_payload_to_frame(payload: list[dict]) -> pl.DataFrame:
+    rows = []
+    for item in payload:
+        common_name = item.get("name", {}).get("common")
+        if not common_name:
+            continue
+        rows.append(
+            {
+                "country": common_name,
+                "region": item.get("region") or "Unknown",
+                "subregion": item.get("subregion") or "Unknown",
+            }
+        )
+
+    return pl.DataFrame(rows).unique(subset=["country"], maintain_order=True)
+```
+
+- JSON -> liste de dictionnaires
+- liste de dictionnaires -> `DataFrame`
+
+---
+
+# Gérer le fallback local proprement
+
+```python
+import json
+from pathlib import Path
+
+
+def load_fallback_countries(path: str) -> list[dict]:
+    with Path(path).open(encoding="utf-8") as handle:
+        return json.load(handle)
+```
+
+- si l'API tombe, on ne bloque pas la salle
+- le fallback ne remplace pas la logique API, il sécurise la démo
+- il contient aussi la ligne pédagogique `Euro` absente de l'API réelle
+
+---
+
+# Joindre l'enrichissement API
+
+```python
+countries_df = countries_payload_to_frame(payload)
+
+enriched_df = (
+    fx_df.join(countries_df, on="country", how="left")
+    .with_columns(
+        [
+            pl.col("region").fill_null("Unknown"),
+            pl.col("subregion").fill_null("Unknown"),
+        ]
+    )
 )
 ```
 
-- une seule initialisation au démarrage
-- niveau simple et lisible pour le cours
+- clé de jointure simple : `country`
+- on garde un `Unknown` si une valeur n'existe pas
 
 ---
 
-# Dire ce que le script est en train de lancer
+# Total converti par région après enrichissement API
 
 ```python
-input_path = "input/clients.csv"
-
-logging.info("Demarrage du traitement clients")
-logging.info("Fichier source: %s", input_path)
+ca_par_region = (
+    enriched_df.group_by("region")
+    .agg(
+        pl.col("montant_converti")
+        .sum()
+        .round(2)
+        .alias("montant_converti_total")
+    )
+    .sort("montant_converti_total", descending=True)
+)
 ```
 
-- nom du traitement
-- fichier d’entrée
-- horodatage
+- c'est l'agrégation que les étudiants ont explicitement demandée
 
 ---
 
-# Rendre le volume traité visible
+# Agrégation finale du mini-projet
 
 ```python
-df = pl.read_csv(input_path)
-result = transform_clients(df)
-
-# apres lecture
-logging.info("Lignes lues: %s", df.height)
-
-# apres transformation
-logging.info("Lignes exportees: %s", result.height)
+final_df = (
+    enriched_df.group_by(["mois_commande", "region", "country", "categorie"])
+    .agg(
+        [
+            pl.len().alias("nb_commandes"),
+            pl.col("customer_id").n_unique().alias("nb_clients_uniques"),
+            pl.col("montant_net").sum().round(2).alias("montant_total"),
+            pl.col("montant_converti")
+            .sum()
+            .round(2)
+            .alias("montant_converti_total"),
+        ]
+    )
+    .sort(["mois_commande", "region", "country", "categorie"])
+)
 ```
 
-- nombre de lignes lues
-- nombre de lignes sorties
-- nombre d’anomalies
+- c'est le livrable analytique final de J3
 
 ---
 
-# Signaler les problèmes sans bloquer
-
-```python
-nb_invalides = result.filter(pl.col("ligne_valide").not_()).height
-
-logging.warning("Emails invalides: %s", nb_invalides)
-```
-
-- type d’anomalie
-- volume concerné
-- signal utile sans bruit excessif
-
----
-
-# Garder une erreur exploitable
-
-```python
-try:
-    r = requests.get(url, timeout=20)
-    r.raise_for_status()
-except requests.RequestException:
-    logging.exception("Echec pendant l'appel API")
-```
-
-- message clair
-- contexte minimal
-- pas de journal incompréhensible
-
----
-
-# Encadrer seulement les zones risquées
-
-```python
-try:
-    result = transform_clients(df)
-except ValueError as exc:
-    logging.error("Transformation invalide: %s", exc)
-    raise
-```
-
-- entourer les zones risquées
-- ne pas masquer toutes les erreurs
-- garder un message exploitable
-
----
-
-# Assembler un traitement rejouable et traçable
-
-```python
-import logging
-import os
-import requests
-import polars as pl
-
-logging.basicConfig(level=logging.INFO)
-token = os.environ.get("API_TOKEN")
-url = os.environ.get("API_URL", "https://api.exemple.local/customers")
-output_path = os.environ.get("OUTPUT_PATH", "output/resultat.csv")
-
-if not token:
-    raise SystemExit("API_TOKEN manquant")
-
-logging.info("Debut du traitement")
-df = pl.read_csv("input/clients.csv")
-r = requests.get(url, timeout=20)
-r.raise_for_status()
-df_api = pl.DataFrame(r.json())
-result = df.join(df_api, on="customer_id", how="left")
-result.write_csv(output_path)
-logging.info("Fin du traitement")
-```
-
-- lecture paramétrée
-- appel API
-- jointure
-- logs
-- export
-
----
-
-# Exercice J3-C - Ajouter des logs utiles à un script
+# Exercice J3-C - Enrichir avec l'API et agréger
 
 Consigne :
 
-- ajouter un log de démarrage
-- ajouter un log de volumétrie
-- ajouter un log d’erreur
+- appeler Rest Countries
+- transformer le JSON en table `Polars`
+- joindre `region` et `subregion`
+- calculer le total converti par `region`
+- produire l'agrégation finale par `mois_commande`, `region`, `country`, `categorie`
 
 ---
 
 # Correction J3-C
 
 ```python
+endpoint = "https://restcountries.com/v3.1/all?fields=name,region,subregion"
+response = requests.get(endpoint, timeout=20)
+response.raise_for_status()
+payload = response.json()
+
+countries_df = countries_payload_to_frame(payload)
+
+enriched_df = (
+    fx_df.join(countries_df, on="country", how="left")
+    .with_columns(
+        [
+            pl.col("region").fill_null("Unknown"),
+            pl.col("subregion").fill_null("Unknown"),
+        ]
+    )
+)
+
+ca_par_region = (
+    enriched_df.group_by("region")
+    .agg(pl.col("montant_converti").sum().round(2).alias("montant_converti_total"))
+    .sort("montant_converti_total", descending=True)
+)
+
+final_df = (
+    enriched_df.group_by(["mois_commande", "region", "country", "categorie"])
+    .agg(
+        [
+            pl.len().alias("nb_commandes"),
+            pl.col("customer_id").n_unique().alias("nb_clients_uniques"),
+            pl.col("montant_net").sum().round(2).alias("montant_total"),
+            pl.col("montant_converti").sum().round(2).alias("montant_converti_total"),
+        ]
+    )
+    .sort(["mois_commande", "region", "country", "categorie"])
+)
+```
+
+---
+
+# Script final compressé : interface CLI
+
+```python
+parser = argparse.ArgumentParser(description="J3 volume + FX + API + aggregations")
+parser.add_argument("--orders", default="cours/jeux_de_donnees/ecommerce_pedagogique/input/commandes_volume_j3.csv")
+parser.add_argument("--rates", default="cours/jeux_de_donnees/ecommerce_pedagogique/input/daily_j3.csv")
+parser.add_argument("--output", default="cours/jeux_de_donnees/ecommerce_pedagogique/output/j3_aggregate_final.csv")
+parser.add_argument("--countries-api", default="https://restcountries.com/v3.1/all?fields=name,region,subregion")
+parser.add_argument("--api-fallback", default="cours/jeux_de_donnees/ecommerce_pedagogique/api/rest_countries_fallback_j3.json")
+args = parser.parse_args()
+```
+
+- interface simple
+- tout passe par des fichiers `.py`
+
+---
+
+# Script final compressé : logging minimal
+
+```python
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-
-logging.info("Debut du traitement")
-logging.info("Lignes lues: %s", df.height)
-
-try:
-    result = transform_clients(df)
-except ValueError:
-    logging.exception("Echec de transformation")
-    raise
-
-logging.info("Lignes exportees: %s", result.height)
+logging.info("Chargement du gros dataset commandes")
+logging.info("Lignes lues: %s", orders_df.height)
+logging.info("Jointure devise sur date + pays")
+logging.info("Lignes avec taux manquant: %s", fx_df.filter(pl.col("fx_manquant")).height)
 ```
 
-- logs courts
-- logs lisibles
-- logs réellement utiles à l’exploitation
+- démarrage
+- volumétrie
+- erreur API si besoin
+- pas plus
 
 ---
 
-# Mini-projet final
+# Script final compressé : enchaînement complet
 
-- reprendre le fil rouge complet
-- de l’entrée brute jusqu’au livrable final
+```python
+orders_df = load_orders(args.orders)
+rates_df = load_rates(args.rates)
+fx_df = join_exchange_rates(orders_df, rates_df)
 
----
+countries_df = fetch_countries_dataframe(
+    args.countries_api,
+    args.api_fallback,
+    set(fx_df.get_column("country").unique().to_list()),
+)
 
-# Entrées attendues
+enriched_df = join_countries(fx_df, countries_df)
+final_df = final_aggregate(enriched_df)
 
-- fichier source métier
-- paramètres d’exécution
-- éventuellement une réponse API simple
+final_df.write_csv(args.output)
+```
 
----
-
-# Étapes du traitement
-
-- lire
-- nettoyer
-- contrôler
-- enrichir
-- exporter
-
----
-
-# Sorties attendues
-
-- fichier final exploitable
-- fichier anomalies
-- script lisible
-- README d’exécution
+- script rejouable
+- pipeline lisible
+- support principal : `code/intermediaire/j3_volume_fx_api.py`
 
 ---
 
-# Checklist de validation
-
-- les colonnes attendues existent
-- la volumétrie est cohérente
-- les anomalies sont identifiées
-- la sortie est réutilisable
-
----
-
-# Squelette du projet final
-
-- `analyse_metier.ipynb`
-- `script_final.py`
-- `output/resultat_final.csv` ou `.xlsx`
-- `output/anomalies.csv`
-- `README_execution.md`
-
----
-
-# Atelier final - Notebook + script + export + anomalies
+# Atelier final J3
 
 Objectif :
 
-- mobiliser tout le cours
-- produire un vrai livrable
+- partir de `commandes_volume_j3.csv`
+- joindre les taux de change
+- appeler l'API réelle
+- produire une agrégation finale exploitable
+- exporter depuis un script `.py`
 
 ---
 
-# Livrable final
+# Livrables J3
 
-- notebook lisible
-- script exécutable
-- sortie propre
-- anomalies séparées
-- documentation courte
-
----
-
-# Critères d’évaluation
-
-- exactitude fonctionnelle
-- lisibilité
-- robustesse minimale
-- cohérence des sorties
-- respect de la structure demandée
+- `code/intermediaire/j3_volume_fx_api.py`
+- `code/intermediaire/j3_bonus_debugger_bug.py`
+- `code/intermediaire/j3_bonus_debugger_fix.py`
+- `cours/jeux_de_donnees/ecommerce_pedagogique/input/commandes_volume_j3.csv`
+- `cours/jeux_de_donnees/ecommerce_pedagogique/input/daily_j3.csv`
+- un export final agrégé
+- un export détaillé enrichi
 
 ---
 
-# Modes dégradés
+# Bonus - debugger
 
-- si l’API est indisponible : réponse locale simulée
-- si Excel bloque : sortie CSV temporaire
-- si le rythme ralentit : correction guidée sur le mini-projet
+- bloc séparé de `20 à 30` minutes
+- pas intégré au mini-projet principal
+- support : un script Python pur volontairement faux
+- objectif : comprendre pourquoi la jointure produit un mauvais résultat
 
 ---
+
+# Pourquoi un bonus sans `Polars`
+
+- le but n'est pas de débugger une expression `Polars`
+- le but est de suivre une logique Python simple
+- on veut voir :
+  - une liste de dictionnaires
+  - une clé de jointure
+  - un dictionnaire de lookup
+  - une agrégation Python lisible
+- c'est plus adapté à un bonus debugger court
+
+---
+
+# Le script volontairement faux
+
+```python
+def parse_order_date_bad(raw: str | None) -> str | None:
+    value = (raw or "").strip()
+    if not value:
+        return None
+
+    try:
+        return datetime.strptime(value, "%d/%m/%Y").date().isoformat()
+    except ValueError:
+        return None
+
+
+def load_orders(path: Path) -> list[dict]:
+    rows = []
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            rows.append(
+                {
+                    "commande_id": row["commande_id"],
+                    "country": row["country"],
+                    "date_commande": row["date_commande"],
+                    "order_date": parse_order_date_bad(row["date_commande"]),
+                    "montant_net": parse_amount(row["montant"]),
+                }
+            )
+    return rows
+```
+
+- le bug n'est pas dans `join`
+- le bug est dans la préparation de la clé
+
+---
+
+# Où mettre les breakpoints
+
+- juste après `load_orders()`
+- dans la boucle qui prépare `order_date`
+- juste avant `rates_lookup.get(lookup_key)`
+- juste avant l'addition dans l'agrégat final
+
+---
+
+# Ce qu'on inspecte dans le debugger
+
+- `row["date_commande"]`
+- `order["order_date"]`
+- `lookup_key`
+- `rate`
+- `summary[country]`
+
+---
+
+# Correction du bug du bonus
+
+```python
+def parse_order_date(raw: str | None) -> str | None:
+    value = (raw or "").strip()
+    if not value:
+        return None
+
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(value, fmt).date().isoformat()
+        except ValueError:
+            pass
+
+    return None
+```
+
+- on corrige la clé
+- la jointure redevient cohérente
+- l'agrégation finale retrouve un ordre de grandeur crédible
+
+---
+
+# Script corrigé du bonus
+
+- fichier : `code/intermediaire/j3_bonus_debugger_fix.py`
+- même structure que le script faux
+- une seule différence importante :
+  - `parse_order_date()` gère `YYYY-MM-DD`, `DD/MM/YYYY`, `YYYY/MM/DD`
+- intérêt pédagogique :
+  - comparer deux scripts presque identiques
+  - isoler exactement la cause du bug
+
+---
+
+# Avant / après correction
+
+Avant :
+
+```text
+Australia,2308,2298,45922.80
+Canada,2496,2482,43210.82
+Euro,1257,1247,21246.18
+Japan,2104,2101,550974.34
+United Kingdom,2335,2325,12333.47
+```
+
+Après :
+
+```text
+Australia,2308,23,6591974.39
+Canada,2496,34,6349000.90
+Euro,1257,15,1867413.98
+Japan,2104,23,417678573.25
+United Kingdom,2335,25,2535626.87
+```
+
+- le nombre de lignes non converties chute fortement
+- les montants convertis changent d'ordre de grandeur
+- le debugger doit amener les étudiants à expliquer pourquoi
+
+---
+
+# Récapitulatif Jour 3
+
+- gros dataset lu proprement
+- agrégations locales plus riches
+- jointure devise sur `date + country`
+- appel API réel avec fallback local
+- agrégation finale exploitable
+- bonus debugger séparé
 
 # Évaluation finale
 

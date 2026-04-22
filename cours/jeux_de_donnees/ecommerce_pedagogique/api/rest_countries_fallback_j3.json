@@ -1,0 +1,37 @@
+[
+  {
+    "name": {
+      "common": "Australia"
+    },
+    "region": "Oceania",
+    "subregion": "Australia and New Zealand"
+  },
+  {
+    "name": {
+      "common": "Canada"
+    },
+    "region": "Americas",
+    "subregion": "North America"
+  },
+  {
+    "name": {
+      "common": "Japan"
+    },
+    "region": "Asia",
+    "subregion": "Eastern Asia"
+  },
+  {
+    "name": {
+      "common": "United Kingdom"
+    },
+    "region": "Europe",
+    "subregion": "Northern Europe"
+  },
+  {
+    "name": {
+      "common": "Euro"
+    },
+    "region": "Europe",
+    "subregion": "Euro Area"
+  }
+]
