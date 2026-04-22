@@ -1,0 +1,31 @@
+client,email,statut,profit,montant,categorie,sous_categorie,email_cleaned,is_valid_email,montant_normalized,currency,vat_amount,total_with_vat,total_with_vat_and_currency,statut_cleaned
+Acme, orders@acme.com ,ok,180.5,"1 200,50 €",Bureautique,Papeterie,orders@acme.com,true,1200.5,€,240.10000000000002,1440.6,1440.6 €,terminé
+Beta Corp,contact_beta.fr,OK,220.0,980.00,Informatique,Ecran,contact_beta.fr,false,980.0,"",196.0,1176.0,1176.0 ,terminé
+Gamma SA,gamma@gamma.com,pending,95.0,,Mobilier,Chaise,gamma@gamma.com,true,,,,,,en attente
+Delta,delta@delta.com,ok,60.0,"450,00",Bureautique,Classement,delta@delta.com,true,450.0,"",90.0,540.0,540.0 ,terminé
+Epsilon,epsiLon@corp.fr , ok ,310.0,"1,980.00 $",Informatique,Clavier,epsilon@corp.fr,true,1980.0,$,396.0,2376.0,2376.0 $,terminé
+Zeta Conseil,zeta@conseil.fr,pending,540.0,"2 340,00 €",Services,Audit,zeta@conseil.fr,true,2340.0,€,468.0,2808.0,2808.0 €,en attente
+Eta,,ok,40.0,320.00,Bureautique,Agenda,,,320.0,"",64.0,384.0,384.0 ,terminé
+Theta,theta@theta.com,annule,12.0,"89,90 €",Mobilier,Lampe,theta@theta.com,true,89.9,€,17.98,107.88,107.88 €,annule
+Iota,iota@iota.com,pending,88.0,560,Informatique,Souris,iota@iota.com,true,560.0,"",112.0,672.0,672.0 ,en attente
+Kappa,sales@kappa.fr,ok,150.0,"1 050,00 €",Bureautique,Impression,sales@kappa.fr,true,1050.0,€,210.0,1260.0,1260.0 €,terminé
+Lambda,lambda@lambda.com,pending,0.0,N/A,Services,Formation,lambda@lambda.com,true,,"",,,,en attente
+Mu Studio,mu@studio.com,OK,124.0,"670,40 €",Mobilier,Bureau,mu@studio.com,true,670.4,€,134.08,804.48,804.48 €,terminé
+Beta Corp,contact@beta.fr,ok,75.0,540.00,Informatique,Webcam,contact@beta.fr,true,540.0,"",108.0,648.0,648.0 ,terminé
+Nu SARL,nu@sarl.fr,pending,260.0,"1 499,99 €",Informatique,Imprimante,nu@sarl.fr,true,1499.99,€,299.998,1799.99,1799.99 €,en attente
+Xi,xi xi.fr,ok,32.0,"210,00",Bureautique,Etiquettes,xi xi.fr,false,210.0,"",42.0,252.0,252.0 ,terminé
+Omicron,omicron@corp.com,ok,480.0,"2 050,00 €",Services,Accompagnement,omicron@corp.com,true,2050.0,€,410.0,2460.0,2460.0 €,terminé
+Pi,pi@pi.com,pending,18.0,99.99,Bureautique,Fournitures,pi@pi.com,true,99.99,"",19.998,119.99,119.99 ,en attente
+Rho,rho@rho.com ,ok,110.0,"760,00 €",Mobilier,Caisson,rho@rho.com,true,760.0,€,152.0,912.0,912.0 €,terminé
+Sigma,sigma@sigma.com,EN ATTENTE,145.0,"1 120,70 €",Informatique,Casque,sigma@sigma.com,true,1120.7,€,224.14000000000001,1344.84,1344.84 €,en attente
+Tau,tau@tau.com,ok,58.0,390.00,Bureautique,Archivage,tau@tau.com,true,390.0,"",78.0,468.0,468.0 ,terminé
+Upsilon,upsilon@upsilon.com,pending,-20.0,0,Services,Support,upsilon@upsilon.com,true,0.0,"",0.0,0.0,0.0 ,en attente
+Phi,phi@phi.com,ok,320.0,"1 890,00 €",Mobilier,Armoire,phi@phi.com,true,1890.0,€,378.0,2268.0,2268.0 €,terminé
+Chi,chi@chi.com,ok,25.0,"155,35 €",Bureautique,Stylos,chi@chi.com,true,155.35,€,31.07,186.42,186.42 €,terminé
+Psi,psi@psi.com,pending,540.0,"2 890,00 €",Informatique,Ordinateur,psi@psi.com,true,2890.0,€,578.0,3468.0,3468.0 €,en attente
+Omega,omega@omega,ok,92.0,"780,00 €",Bureautique,Cartouches,omega@omega,false,780.0,€,156.0,936.0,936.0 €,terminé
+Atlas,atlas@atlas.com,ok,170.0,1 340.40,Informatique,Dock,atlas@atlas.com,true,1340.4,"",268.08000000000004,1608.48,1608.48 ,terminé
+Boreal,boreal@corp.fr,pending,84.0,450 €,Services,Installation,boreal@corp.fr,true,450.0,€,90.0,540.0,540.0 €,en attente
+Celsius,celsius@celsius.com,ok,75.0,"610,50 €",Mobilier,Support ecran,celsius@celsius.com,true,610.5,€,122.10000000000001,732.6,732.6 €,terminé
+Dynamo,dynamo@dynamo.com,OK,133.0,"  999,99 € ",Informatique,Routeur,dynamo@dynamo.com,true,999.99,€,199.99800000000002,1199.99,1199.99 €,terminé
+Equinoxe,equinoxe@equinoxe.com,ok,165.0,"1 075,00 €",Bureautique,Reliure,equinoxe@equinoxe.com,true,1075.0,€,215.0,1290.0,1290.0 €,terminé

@@ -75,9 +75,10 @@ def normalize_date(raw: str) -> str | None:
 
 def test():
     """Exécute des tests pour les fonctions de normalisation."""
-    print(normalize_amount(" 1 200,50 €") == 1200.50)
-    print(normalize_amount("1,200,50 $") == 1200.50)
-    print(normalize_amount(" 999€") == 999.0)
+    print("☀️", normalize_amount("10,562.46 $"))
+    # print(normalize_amount(" 1 200,50 €") == 1200.50)
+    # print(normalize_amount("1,200,50 $") == 1200.50)
+    # print(normalize_amount(" 999€") == 999.0)
 
 
 print("🎉", __name__)

@@ -148,3 +148,10 @@ print(
     )
     .sort(["categorie", "sous_categorie"])
 )
+
+
+print(
+    dff.select(pl.col("statut_cleaned").value_counts(sort=True)).unnest(
+        "statut_cleaned"
+    )
+)
